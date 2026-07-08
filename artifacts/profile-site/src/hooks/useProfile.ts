@@ -54,8 +54,7 @@ export function useUpdateProfile() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .update(profileUpdate)
-        .eq('id', profileId)
+        .upsert({ id: profileId, ...profileUpdate }, { onConflict: 'id' })
         .select()
         .single();
 
