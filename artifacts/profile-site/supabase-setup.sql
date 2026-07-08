@@ -84,17 +84,18 @@ insert into storage.buckets (id, name, public) values ('banner', 'banner', true)
 insert into storage.buckets (id, name, public) values ('posts', 'posts', true) on conflict do nothing;
 
 -- Storage policies: public read, authenticated write
+-- Uses auth.uid() IS NOT NULL (more reliable than auth.role() = 'authenticated')
 create policy "Public read profile bucket" on storage.objects for select using (bucket_id = 'profile');
-create policy "Admin upload profile bucket" on storage.objects for insert with check (bucket_id = 'profile' and auth.role() = 'authenticated');
-create policy "Admin update profile bucket" on storage.objects for update using (bucket_id = 'profile' and auth.role() = 'authenticated');
-create policy "Admin delete profile bucket" on storage.objects for delete using (bucket_id = 'profile' and auth.role() = 'authenticated');
+create policy "Admin upload profile bucket" on storage.objects for insert with check (bucket_id = 'profile' and auth.uid() is not null);
+create policy "Admin update profile bucket" on storage.objects for update using (bucket_id = 'profile' and auth.uid() is not null);
+create policy "Admin delete profile bucket" on storage.objects for delete using (bucket_id = 'profile' and auth.uid() is not null);
 
 create policy "Public read banner bucket" on storage.objects for select using (bucket_id = 'banner');
-create policy "Admin upload banner bucket" on storage.objects for insert with check (bucket_id = 'banner' and auth.role() = 'authenticated');
-create policy "Admin update banner bucket" on storage.objects for update using (bucket_id = 'banner' and auth.role() = 'authenticated');
-create policy "Admin delete banner bucket" on storage.objects for delete using (bucket_id = 'banner' and auth.role() = 'authenticated');
+create policy "Admin upload banner bucket" on storage.objects for insert with check (bucket_id = 'banner' and auth.uid() is not null);
+create policy "Admin update banner bucket" on storage.objects for update using (bucket_id = 'banner' and auth.uid() is not null);
+create policy "Admin delete banner bucket" on storage.objects for delete using (bucket_id = 'banner' and auth.uid() is not null);
 
 create policy "Public read posts bucket" on storage.objects for select using (bucket_id = 'posts');
-create policy "Admin upload posts bucket" on storage.objects for insert with check (bucket_id = 'posts' and auth.role() = 'authenticated');
-create policy "Admin update posts bucket" on storage.objects for update using (bucket_id = 'posts' and auth.role() = 'authenticated');
-create policy "Admin delete posts bucket" on storage.objects for delete using (bucket_id = 'posts' and auth.role() = 'authenticated');
+create policy "Admin upload posts bucket" on storage.objects for insert with check (bucket_id = 'posts' and auth.uid() is not null);
+create policy "Admin update posts bucket" on storage.objects for update using (bucket_id = 'posts' and auth.uid() is not null);
+create policy "Admin delete posts bucket" on storage.objects for delete using (bucket_id = 'posts' and auth.uid() is not null);
