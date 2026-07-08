@@ -1,0 +1,104 @@
+Build a modern premium personal profile website using Next.js 15, TypeScript, Tailwind CSS, and Supabase.
+
+Create a beautiful dark theme with glassmorphism, smooth animations, rounded corners, premium typography, responsive layout, and excellent mobile support.
+
+The website is for a single creator only, not multiple users.
+
+Pages:
+- Home
+- Admin Login
+- Admin Dashboard
+- 404
+
+Home Page:
+- Full-width banner image.
+- Circular profile picture overlapping the banner.
+- Display creator name.
+- Short bio.
+- About section.
+- Social media links.
+- Contact button.
+- Clean, premium layout.
+
+Posts:
+- Admin can upload images or videos.
+- Each post supports a caption.
+- Show newest posts first.
+- Beautiful responsive cards.
+- Image lightbox.
+- HTML5 video player.
+- Show upload date.
+
+Comments:
+- Every post has a comments section.
+- Visitors do NOT need to sign up or log in.
+- Comment form contains:
+  - Name (required)
+  - Comment (required)
+- Store comments in Supabase.
+- Show newest comments first.
+- Display comment count.
+- Admin can delete any comment.
+- Prevent spam with basic rate limiting and input validation.
+
+Message Me:
+- Contact button opens a form.
+- Fields:
+  - Name
+  - Email (optional)
+  - Message
+- Save messages in Supabase.
+- Show success notification.
+
+Admin Dashboard:
+- Secure login using Supabase Authentication.
+- Only the admin can access it.
+- Change profile picture.
+- Change banner image.
+- Edit name.
+- Edit bio.
+- Upload image/video posts.
+- Edit posts.
+- Delete posts.
+- Pin/unpin posts.
+- View all messages.
+- Delete comments.
+- Dashboard statistics.
+
+Supabase Tables:
+profiles
+posts
+comments
+messages
+
+Storage Buckets:
+profile
+banner
+posts
+
+Security:
+- Enable Row Level Security.
+- Protect admin routes.
+- Validate all forms.
+- Sanitize inputs.
+- Optimize image loading.
+- Handle upload errors.
+
+Performance:
+- SEO optimized.
+- Fast loading.
+- Lazy loading.
+- Responsive on all devices.
+
+Tech Stack:
+- Next.js 15 (App Router)
+- TypeScript
+- Tailwind CSS
+- Supabase
+- Framer Motion
+- Lucide React
+
+Footer:
+Developed by Sarthak
+
+Do not use dummy data. Connect every feature to Supabase. Generate a complete production-ready project with a clean folder structure and reusable components. Do not include any branding or watermark.
