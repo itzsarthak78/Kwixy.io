@@ -50,7 +50,8 @@ function ProfileSection() {
         ...formData,
         social_links: parsedLinks
       }, {
-        onSuccess: () => toast.success('Profile saved')
+        onSuccess: () => toast.success('Profile saved'),
+        onError: (err: any) => toast.error(err.message || 'Failed to save profile')
       });
     } catch (e) {
       toast.error('Invalid JSON in social links');

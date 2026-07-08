@@ -39,30 +39,44 @@ export function useUpdateProfile() {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData.session) throw new Error('Not authenticated');
 
-      // Singleton profile — get its actual id from cache or fetch it
+      // Try to get existing profile id from cache first
       const cached = queryClient.getQueryData<Profile>(['profile']);
       let profileId = cached?.id;
 
+      // If not in cache, try fetching from DB
       if (!profileId) {
-        const { data: current, error: fetchErr } = await supabase
+        const { data: current } = await supabase
           .from('profiles')
           .select('id')
-          .single();
-        if (fetchErr) throw fetchErr;
-        profileId = current.id;
+          .maybeSingle();
+        profileId = current?.id;
       }
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .upsert({ id: profileId, ...profileUpdate }, { onConflict: 'id' })
-        .select()
-        .single();
+      let data, error;
+
+      if (profileId) {
+        // Profile row exists — update it
+        ({ data, error } = await supabase
+          .from('profiles')
+          .update(profileUpdate)
+          .eq('id', profileId)
+          .select()
+          .single());
+      } else {
+        // No profile row yet — insert a new one
+        ({ data, error } = await supabase
+          .from('profiles')
+          .insert(profileUpdate)
+          .select()
+          .single());
+      }
 
       if (error) throw error;
       return data as Profile;
     },
     onSuccess: (data) => {
       queryClient.setQueryData(['profile'], data);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
     }
   });
 }
