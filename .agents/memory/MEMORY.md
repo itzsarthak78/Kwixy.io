@@ -1,0 +1,1 @@
+- [Supabase-direct frontend pattern](supabase-direct-frontend.md) — apps using Supabase instead of Express backend: skip OpenAPI/codegen, install @supabase/supabase-js in artifact, use VITE_ env vars, all data calls go through supabase client.
