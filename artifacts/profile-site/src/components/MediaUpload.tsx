@@ -1,18 +1,24 @@
 import React, { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud } from 'lucide-react';
+import { Loader2, UploadCloud, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MediaUploadProps {
   bucket: string;
-  onUploadSuccess: (url: string) => void;
+  onUploadSuccess: (url: string, mimeType: string) => void;
   accept?: string;
   label?: string;
 }
 
-export function MediaUpload({ bucket, onUploadSuccess, accept = 'image/*,video/*', label = 'Upload File' }: MediaUploadProps) {
+export function MediaUpload({
+  bucket,
+  onUploadSuccess,
+  accept = 'image/*,video/*',
+  label = 'Upload File',
+}: MediaUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
+  const [uploaded, setUploaded] = useState(false);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -20,24 +26,24 @@ export function MediaUpload({ bucket, onUploadSuccess, accept = 'image/*,video/*
 
     try {
       setIsUploading(true);
+      setUploaded(false);
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(filePath, file, { upsert: true });
+        .upload(fileName, file, { upsert: true });
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
-      onUploadSuccess(data.publicUrl);
-      toast.success('Upload successful');
+      const { data } = supabase.storage.from(bucket).getPublicUrl(fileName);
+      setUploaded(true);
+      onUploadSuccess(data.publicUrl, file.type);
+      toast.success('Uploaded successfully');
     } catch (error: any) {
-      toast.error(error.message || 'Error uploading file');
+      toast.error(error.message || 'Upload failed');
     } finally {
       setIsUploading(false);
-      // Reset input
       e.target.value = '';
     }
   };
@@ -55,17 +61,22 @@ export function MediaUpload({ bucket, onUploadSuccess, accept = 'image/*,video/*
         type="button"
         variant="outline"
         disabled={isUploading}
-        className="w-full h-32 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center gap-2"
+        className="w-full h-28 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors flex flex-col items-center justify-center gap-2"
       >
         {isUploading ? (
           <>
             <Loader2 className="w-6 h-6 animate-spin text-primary" />
-            <span className="text-muted-foreground">Uploading...</span>
+            <span className="text-muted-foreground text-sm">Uploading…</span>
+          </>
+        ) : uploaded ? (
+          <>
+            <CheckCircle2 className="w-6 h-6 text-green-400" />
+            <span className="text-green-400 text-sm">Uploaded — click to replace</span>
           </>
         ) : (
           <>
-            <UploadCloud className="w-8 h-8 text-muted-foreground" />
-            <span className="text-muted-foreground">{label}</span>
+            <UploadCloud className="w-7 h-7 text-muted-foreground" />
+            <span className="text-muted-foreground text-sm">{label}</span>
           </>
         )}
       </Button>

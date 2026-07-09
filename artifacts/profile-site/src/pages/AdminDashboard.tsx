@@ -65,24 +65,38 @@ function ProfileSection() {
           <h3 className="text-lg font-medium text-white border-b border-white/10 pb-2">Profile Media</h3>
           <div className="space-y-2">
             <label className="text-sm text-white/60">Profile Picture</label>
-            <MediaUpload 
-              bucket="profile" 
+            <MediaUpload
+              bucket="profile"
               label="Upload Avatar"
-              onUploadSuccess={(url) => updateProfile.mutate({ profile_picture_url: url }, { onSuccess: () => toast.success('Avatar updated') })}
+              accept="image/*"
+              onUploadSuccess={(url) => updateProfile.mutate(
+                { profile_picture_url: url },
+                {
+                  onSuccess: () => toast.success('Avatar updated'),
+                  onError: (err: any) => toast.error(err.message || 'Failed to save avatar'),
+                }
+              )}
             />
             {profile?.profile_picture_url && (
-              <img src={profile.profile_picture_url} className="w-16 h-16 rounded-full object-cover mt-2" alt="Avatar" />
+              <img src={profile.profile_picture_url} className="w-16 h-16 rounded-full object-cover mt-2 border border-white/10" alt="Avatar" />
             )}
           </div>
           <div className="space-y-2 pt-4">
             <label className="text-sm text-white/60">Banner Image</label>
-            <MediaUpload 
-              bucket="banner" 
+            <MediaUpload
+              bucket="banner"
               label="Upload Banner"
-              onUploadSuccess={(url) => updateProfile.mutate({ banner_url: url }, { onSuccess: () => toast.success('Banner updated') })}
+              accept="image/*"
+              onUploadSuccess={(url) => updateProfile.mutate(
+                { banner_url: url },
+                {
+                  onSuccess: () => toast.success('Banner updated'),
+                  onError: (err: any) => toast.error(err.message || 'Failed to save banner'),
+                }
+              )}
             />
             {profile?.banner_url && (
-              <img src={profile.banner_url} className="w-full h-24 rounded-lg object-cover mt-2" alt="Banner" />
+              <img src={profile.banner_url} className="w-full h-24 rounded-lg object-cover mt-2 border border-white/10" alt="Banner" />
             )}
           </div>
         </div>
@@ -143,10 +157,9 @@ function PostsSection() {
     url: '', type: null, caption: ''
   });
 
-  const handleUploadSuccess = (url: string) => {
-    // guess type from extension
-    const isVideo = url.match(/\.(mp4|webm|ogg)$/i);
-    setNewPost(prev => ({ ...prev, url, type: isVideo ? 'video' : 'image' }));
+  const handleUploadSuccess = (url: string, mimeType: string) => {
+    const type: 'video' | 'image' = mimeType.startsWith('video/') ? 'video' : 'image';
+    setNewPost(prev => ({ ...prev, url, type }));
   };
 
   const handleCreatePost = () => {
