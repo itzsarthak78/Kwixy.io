@@ -17,17 +17,15 @@ export function useProfile() {
   return useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
+      // Use limit(1) + maybeSingle so multiple rows never cause a 406 error
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .single();
+        .limit(1)
+        .maybeSingle();
 
-      if (error) {
-        // Return dummy data if table is empty or error
-        if (error.code === 'PGRST116') return null; 
-        throw error;
-      }
-      return data as Profile;
+      if (error) throw error;
+      return data as Profile | null;
     }
   });
 }
@@ -43,11 +41,12 @@ export function useUpdateProfile() {
       const cached = queryClient.getQueryData<Profile>(['profile']);
       let profileId = cached?.id;
 
-      // If not in cache, try fetching from DB
+      // If not in cache, try fetching from DB (limit 1 avoids 406 on multiple rows)
       if (!profileId) {
         const { data: current } = await supabase
           .from('profiles')
           .select('id')
+          .limit(1)
           .maybeSingle();
         profileId = current?.id;
       }
