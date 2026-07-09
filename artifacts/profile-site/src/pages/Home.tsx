@@ -3,18 +3,47 @@ import { useProfile } from '../hooks/useProfile';
 import { usePosts, PostWithCounts } from '../hooks/usePosts';
 import { Lightbox } from '../components/Lightbox';
 import { ChatModal } from '../components/ChatModal';
-import { Button } from '@/components/ui/button';
-import { MessageCircle, Grid3X3, Loader2, Play } from 'lucide-react';
+import { MessageCircle, Play, ArrowUp, Loader2, Link2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import * as SiIcons from 'react-icons/si';
-import { Compass } from 'lucide-react';
 
+/* ── helpers ── */
 const getIcon = (platform: string) => {
-  const iconName = `Si${platform.charAt(0).toUpperCase() + platform.slice(1).toLowerCase()}`;
-  const IconComponent = (SiIcons as any)[iconName];
-  return IconComponent ? <IconComponent className="w-4 h-4" /> : <Compass className="w-4 h-4" />;
+  const name = `Si${platform.charAt(0).toUpperCase()}${platform.slice(1).toLowerCase()}`;
+  const Icon = (SiIcons as any)[name];
+  return Icon ? <Icon className="w-4 h-4" /> : <Link2 className="w-4 h-4" />;
 };
 
+function Avatar({
+  src,
+  name,
+  className = '',
+  textClass = 'text-2xl',
+}: {
+  src?: string | null;
+  name: string;
+  className?: string;
+  textClass?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={name}
+        className={`object-cover ${className}`}
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+  return (
+    <div className={`bg-[#272729] flex items-center justify-center ${className}`}>
+      <span className={`font-bold text-[#818384] ${textClass}`}>{name?.[0]?.toUpperCase() || '?'}</span>
+    </div>
+  );
+}
+
+/* ── main ── */
 export default function Home() {
   const { data: profile, isLoading: profileLoading } = useProfile();
   const { data: posts, isLoading: postsLoading } = usePosts();
@@ -23,21 +52,21 @@ export default function Home() {
 
   if (profileLoading || postsLoading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-[#ff4500]" />
       </div>
     );
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center text-center px-4">
+      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center text-center px-4">
         <div>
-          <div className="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-4">
-            <Compass className="w-8 h-8 text-white/20" />
+          <div className="w-20 h-20 rounded-full bg-[#1a1a1b] border border-[#343536] flex items-center justify-center mx-auto mb-4">
+            <span className="text-3xl text-[#818384]">?</span>
           </div>
-          <h2 className="text-white/60 text-sm">No profile found</h2>
-          <p className="text-white/30 text-xs mt-1">Log in to the admin dashboard to create your profile.</p>
+          <h2 className="text-[#d7dadc] text-sm font-medium">No profile found</h2>
+          <p className="text-[#818384] text-xs mt-1">Log in to the admin dashboard to set up your profile.</p>
         </div>
       </div>
     );
@@ -46,183 +75,254 @@ export default function Home() {
   const postCount = posts?.length ?? 0;
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
-      {/* ── Header ── */}
-      <div className="max-w-[935px] mx-auto px-4 pt-10 pb-6">
-        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-8">
+    <div className="min-h-screen bg-[#0d1117] text-[#d7dadc]">
 
-          {/* Avatar */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4 }}
-            className="flex-shrink-0"
-          >
-            <div className="relative">
-              <div className="w-[120px] h-[120px] sm:w-[150px] sm:h-[150px] rounded-full p-[3px]"
-                style={{ background: 'linear-gradient(135deg, #6c63ff, #a855f7, #ec4899)' }}>
-                <div className="w-full h-full rounded-full overflow-hidden bg-[#0a0a0f] p-[2px]">
-                  <div className="w-full h-full rounded-full overflow-hidden">
-                    {profile.profile_picture_url ? (
-                      <img
-                        src={profile.profile_picture_url}
-                        alt={profile.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                        <span className="font-serif text-4xl text-primary">{profile.name?.[0] || 'A'}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Info */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="flex-1 text-center sm:text-left"
-          >
-            {/* Name + Message button */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 mb-4">
-              <h1 className="text-xl font-semibold tracking-tight text-white">{profile.name}</h1>
-              <Button
-                onClick={() => setIsChatOpen(true)}
-                size="sm"
-                className="rounded-lg px-4 h-8 bg-white/10 hover:bg-white/20 text-white text-sm font-medium border border-white/10 transition-all"
-              >
-                <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
-                Message
-              </Button>
-            </div>
-
-            {/* Stats */}
-            <div className="flex justify-center sm:justify-start gap-6 mb-4">
-              <div className="text-center sm:text-left">
-                <span className="text-white font-semibold text-sm">{postCount}</span>
-                <span className="text-white/50 text-sm ml-1">posts</span>
-              </div>
-            </div>
-
-            {/* Bio */}
-            {profile.bio && (
-              <p className="text-[#6c63ff] text-sm font-medium tracking-wide mb-1">{profile.bio}</p>
-            )}
-            {profile.about && (
-              <p className="text-white/70 text-sm leading-relaxed max-w-md">{profile.about}</p>
-            )}
-
-            {/* Social links */}
-            {profile.social_links && profile.social_links.length > 0 && (
-              <div className="flex gap-3 mt-3 justify-center sm:justify-start">
-                {profile.social_links.map((link, i) => (
-                  <a
-                    key={i}
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-white/60 hover:text-white hover:border-primary/50 hover:bg-primary/10 transition-all"
-                  >
-                    {getIcon(link.platform)}
-                  </a>
-                ))}
-              </div>
-            )}
-          </motion.div>
+      {/* ── Banner ── */}
+      {profile.banner_url && (
+        <div className="w-full h-32 sm:h-48 overflow-hidden bg-[#1a1a1b]">
+          <img
+            src={profile.banner_url}
+            alt="Banner"
+            className="w-full h-full object-cover"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
         </div>
+      )}
 
-        {/* Banner (below header on mobile, shown as a subtle strip) */}
-        {profile.banner_url && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-6 rounded-2xl overflow-hidden h-32 sm:h-44"
-          >
-            <img src={profile.banner_url} alt="Banner" className="w-full h-full object-cover" />
-          </motion.div>
-        )}
-      </div>
+      {/* ── Page shell ── */}
+      <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="flex gap-6 items-start">
 
-      {/* ── Divider + Tab ── */}
-      <div className="border-t border-white/10 max-w-[935px] mx-auto">
-        <div className="flex justify-center gap-8">
-          <div className="flex items-center gap-2 py-3 border-t border-white text-white text-xs font-semibold tracking-widest uppercase">
-            <Grid3X3 className="w-3.5 h-3.5" />
-            Posts
-          </div>
-        </div>
-      </div>
-
-      {/* ── Posts Grid ── */}
-      <div className="max-w-[935px] mx-auto px-0 sm:px-4 pb-16">
-        {posts && posts.length > 0 ? (
-          <div className="grid grid-cols-3 gap-[3px] sm:gap-1">
-            {posts.map((post, i) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.04 }}
-                className="relative aspect-square cursor-pointer group overflow-hidden bg-white/5"
-                onClick={() => setActivePost(post)}
-              >
-                {post.media_type === 'video' ? (
-                  <>
-                    <video
-                      src={post.media_url}
-                      className="w-full h-full object-cover"
-                      muted
-                      playsInline
-                      preload="metadata"
-                    />
-                    <div className="absolute top-2 right-2 text-white drop-shadow-lg">
-                      <Play className="w-4 h-4 fill-white" />
-                    </div>
-                  </>
-                ) : (
+          {/* ══ LEFT SIDEBAR (profile card) ══ */}
+          <aside className="hidden md:block w-72 flex-shrink-0">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-2xl overflow-hidden bg-[#1a1a1b] border border-[#343536] sticky top-6"
+            >
+              {/* Mini banner strip */}
+              <div className="h-16 bg-gradient-to-r from-[#ff4500]/30 via-[#ff6534]/20 to-[#ff4500]/10 relative">
+                {profile.banner_url && (
                   <img
-                    src={post.media_url}
-                    alt={post.caption}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
+                    src={profile.banner_url}
+                    alt=""
+                    className="w-full h-full object-cover opacity-60"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
                 )}
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
-                  <div className="flex items-center gap-1.5 text-white font-semibold text-sm">
-                    <MessageCircle className="w-5 h-5 fill-white" />
-                    <span>{post.comments_count}</span>
+              </div>
+
+              {/* Avatar — overlaps banner */}
+              <div className="px-4 pb-4">
+                <div className="-mt-8 mb-3">
+                  <div className="w-16 h-16 rounded-full ring-4 ring-[#1a1a1b] overflow-hidden bg-[#272729]">
+                    <Avatar src={profile.profile_picture_url} name={profile.name} className="w-full h-full" textClass="text-2xl" />
                   </div>
                 </div>
+
+                <h1 className="text-[#d7dadc] font-bold text-base leading-tight">{profile.name}</h1>
+
+                {profile.bio && (
+                  <p className="text-[#ff4500] text-xs font-semibold mt-0.5 tracking-wide">{profile.bio}</p>
+                )}
+
+                {profile.about && (
+                  <p className="text-[#818384] text-xs leading-relaxed mt-2">{profile.about}</p>
+                )}
+
+                {/* Karma-style stats */}
+                <div className="mt-4 pt-4 border-t border-[#343536] grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[#d7dadc] font-bold text-sm">{postCount}</p>
+                    <p className="text-[#818384] text-xs">Posts</p>
+                  </div>
+                  <div>
+                    <p className="text-[#d7dadc] font-bold text-sm">∞</p>
+                    <p className="text-[#818384] text-xs">Karma</p>
+                  </div>
+                </div>
+
+                {/* Social links */}
+                {profile.social_links && profile.social_links.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-[#343536] flex flex-wrap gap-2">
+                    {profile.social_links.map((link, i) => (
+                      <a
+                        key={i}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[#272729] hover:bg-[#3c3c3d] border border-[#343536] text-[#818384] hover:text-[#d7dadc] transition-all text-xs"
+                      >
+                        {getIcon(link.platform)}
+                        <span className="capitalize">{link.platform}</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+
+                {/* Message button */}
+                <button
+                  onClick={() => setIsChatOpen(true)}
+                  className="mt-4 w-full py-2 rounded-full bg-[#ff4500] hover:bg-[#ff5722] text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Send Message
+                </button>
+              </div>
+            </motion.div>
+          </aside>
+
+          {/* ══ MAIN FEED ══ */}
+          <main className="flex-1 min-w-0">
+
+            {/* Mobile profile header */}
+            <div className="md:hidden mb-4">
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3 bg-[#1a1a1b] border border-[#343536] rounded-2xl p-4"
+              >
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-[#272729] flex-shrink-0">
+                  <Avatar src={profile.profile_picture_url} name={profile.name} className="w-full h-full" textClass="text-xl" />
+                </div>
+                <div className="min-w-0">
+                  <h1 className="text-[#d7dadc] font-bold text-base">{profile.name}</h1>
+                  {profile.bio && <p className="text-[#ff4500] text-xs font-semibold">{profile.bio}</p>}
+                  <p className="text-[#818384] text-xs">{postCount} posts</p>
+                </div>
               </motion.div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-24">
-            <div className="w-16 h-16 rounded-full border-2 border-white/20 flex items-center justify-center mx-auto mb-4">
-              <Grid3X3 className="w-7 h-7 text-white/20" />
             </div>
-            <h3 className="text-white font-semibold mb-1">No Posts Yet</h3>
-            <p className="text-white/40 text-sm">When posts are shared they'll appear here.</p>
-          </div>
-        )}
+
+            {/* Feed sort bar */}
+            <div className="flex items-center gap-2 mb-4 bg-[#1a1a1b] border border-[#343536] rounded-xl px-4 py-2.5">
+              <ArrowUp className="w-4 h-4 text-[#ff4500]" />
+              <span className="text-[#d7dadc] text-sm font-bold">Top Posts</span>
+            </div>
+
+            {/* Post cards */}
+            {posts && posts.length > 0 ? (
+              <div className="space-y-3">
+                {posts.map((post, i) => (
+                  <PostCard key={post.id} post={post} index={i} onClick={() => setActivePost(post)} />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-[#1a1a1b] border border-[#343536] rounded-2xl py-20 text-center">
+                <div className="w-14 h-14 rounded-full bg-[#272729] flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">📭</span>
+                </div>
+                <h3 className="text-[#d7dadc] font-bold text-sm">No posts yet</h3>
+                <p className="text-[#818384] text-xs mt-1">Posts will appear here once added.</p>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
 
       {/* ── Footer ── */}
-      <footer className="py-6 text-center border-t border-white/5">
-        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em] font-mono">
+      <footer className="py-6 text-center border-t border-[#343536] mt-8">
+        <p className="text-[10px] text-[#818384] uppercase tracking-[0.2em] font-mono">
           Developed by Sarthak
         </p>
       </footer>
+
+      {/* ── Floating DM Button ── */}
+      <motion.button
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 0.6, type: 'spring', stiffness: 260, damping: 20 }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsChatOpen(true)}
+        className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#ff4500] hover:bg-[#ff5722] shadow-lg shadow-[#ff4500]/30 flex items-center justify-center text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        aria-label="Send a message"
+      >
+        <MessageCircle className="w-6 h-6" />
+      </motion.button>
 
       {/* ── Modals ── */}
       <Lightbox post={activePost} isOpen={!!activePost} onClose={() => setActivePost(null)} />
       <ChatModal isOpen={isChatOpen} onOpenChange={setIsChatOpen} />
     </div>
+  );
+}
+
+/* ── Post Card (Reddit style) ── */
+function PostCard({ post, index, onClick }: { post: PostWithCounts; index: number; onClick: () => void }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.05 }}
+      onClick={onClick}
+      className="bg-[#1a1a1b] border border-[#343536] hover:border-[#818384] rounded-2xl overflow-hidden cursor-pointer transition-colors group flex"
+    >
+      {/* Vote rail */}
+      <div className="w-10 flex-shrink-0 flex flex-col items-center justify-start pt-3 gap-1 bg-[#161617]">
+        <ArrowUp className="w-5 h-5 text-[#818384] group-hover:text-[#ff4500] transition-colors" />
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 min-w-0 p-3 flex gap-3">
+        <div className="flex-1 min-w-0">
+          {/* Caption */}
+          {post.caption && (
+            <p className="text-[#d7dadc] text-sm font-medium leading-snug line-clamp-2 mb-2">{post.caption}</p>
+          )}
+
+          {/* Media preview */}
+          {post.media_url && post.media_type === 'image' && (
+            imgFailed ? (
+              <div className="rounded-lg mb-2 bg-[#272729] h-16 flex items-center justify-center text-[#818384] text-xs border border-[#343536]">
+                Image unavailable
+              </div>
+            ) : (
+              <div className="rounded-lg overflow-hidden mb-2 max-h-80 bg-[#272729]">
+                <img
+                  src={post.media_url}
+                  alt={post.caption}
+                  className="w-full object-cover max-h-80"
+                  loading="lazy"
+                  onError={() => setImgFailed(true)}
+                />
+              </div>
+            )
+          )}
+
+          {post.media_type === 'video' && !videoFailed && (
+            <div
+              className="relative rounded-lg overflow-hidden mb-2 bg-[#272729] flex items-center justify-center"
+              style={{ height: '160px' }}
+            >
+              <video
+                src={post.media_url}
+                className="w-full h-full object-cover"
+                muted
+                playsInline
+                preload="metadata"
+                onError={() => setVideoFailed(true)}
+              />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-full">
+                  <Play className="w-4 h-4 text-white fill-white" />
+                  <span className="text-white text-xs font-medium">Play</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center gap-3 text-[#818384] text-xs">
+            <button className="flex items-center gap-1.5 hover:text-[#d7dadc] transition-colors py-1 px-2 rounded hover:bg-[#272729]">
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>{post.comments_count} Comments</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.article>
   );
 }
