@@ -66,7 +66,7 @@ function ProfileSection() {
           <div className="space-y-2">
             <label className="text-sm text-white/60">Profile Picture</label>
             <MediaUpload
-              bucket="profile"
+              bucket="media"
               label="Upload Avatar"
               accept="image/*"
               onUploadSuccess={(url) => updateProfile.mutate(
@@ -78,13 +78,18 @@ function ProfileSection() {
               )}
             />
             {profile?.profile_picture_url && (
-              <img src={profile.profile_picture_url} className="w-16 h-16 rounded-full object-cover mt-2 border border-white/10" alt="Avatar" />
+              <img
+                src={profile.profile_picture_url}
+                className="w-16 h-16 rounded-full object-cover mt-2 border border-white/10"
+                alt="Avatar"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
             )}
           </div>
           <div className="space-y-2 pt-4">
             <label className="text-sm text-white/60">Banner Image</label>
             <MediaUpload
-              bucket="banner"
+              bucket="media"
               label="Upload Banner"
               accept="image/*"
               onUploadSuccess={(url) => updateProfile.mutate(
@@ -96,7 +101,12 @@ function ProfileSection() {
               )}
             />
             {profile?.banner_url && (
-              <img src={profile.banner_url} className="w-full h-24 rounded-lg object-cover mt-2 border border-white/10" alt="Banner" />
+              <img
+                src={profile.banner_url}
+                className="w-full h-24 rounded-lg object-cover mt-2 border border-white/10"
+                alt="Banner"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
             )}
           </div>
         </div>
@@ -188,7 +198,7 @@ function PostsSection() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             {!newPost.url ? (
-              <MediaUpload bucket="posts" onUploadSuccess={handleUploadSuccess} />
+              <MediaUpload bucket="media" onUploadSuccess={handleUploadSuccess} />
             ) : (
               <div className="relative rounded-lg overflow-hidden h-40 bg-black/50 border border-white/10 group">
                 {newPost.type === 'video' ? (
